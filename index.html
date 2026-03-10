@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Помощник водителя трамвая</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* ============================================================
+           CSS ПЕРЕМЕННЫЕ И ТЕМЫ
+           ============================================================ */
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --bg-card-hover: #1a2742;
+            --text-primary: #e8e8e8;
+            --text-secondary: #a0a0b8;
+            --text-muted: #6c6c80;
+            --accent: #4fc3f7;
+            --accent-dark: #0288d1;
+            --accent-glow: rgba(79, 195, 247, 0.15);
+            --success: #66bb6a;
+            --warning: #ffa726;
+            --danger: #ef5350;
+            --border: #2a2a4a;
+            --shadow: 0 4px 20px rgba(0,0,0,0.3);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ============================================================
+           БАЗОВЫЕ СТИЛИ
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
+        /* ============================================================
+           ШАПКА
+           ============================================================ */
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+            display: none;
+        }
+
+        .back-btn:active {
+            background: var(--accent-glow);
+        }
+
+        .back-btn.visible {
+            display: block;
+        }
+
+        /* ============================================================
+           КОНТЕНТ
+           ============================================================ */
+        .content {
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ============================================================
+           ЭКРАН ПРИВЕТСТВИЯ
+           ============================================================ */
+        .greeting-card {
+            background: linear-gradient(135deg, #1a2742, #16213e);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .greeting-card .emoji {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .greeting-card h2 {
+            font-size: 20px;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .greeting-card p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* ============================================================
+           КНОПКИ МЕНЮ
+           ============================================================ */
+        .menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .menu-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: left;
+            width: 100%;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .menu-btn:active {
+            transform: scale(0.97);
+            background: var(--bg-card-hover);
+            border-color: var(--accent);
+        }
+
+        .menu-btn .icon {
+            font-size: 28px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .menu-btn .label {
+            flex: 1;
+        }
+
+        .menu-btn .label small {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        .menu-btn .arrow {
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        /* ============================================================
+           ПОИСК
+           ============================================================ */
+        .search-box {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 20px 16px 48px;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: var(--text-muted);
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-secondary);
+            border: none;
+            color: var(--text-muted);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 50%;
+            display: none;
+        }
+
+        .search-clear.visible {
+            display: block;
+        }
+
+        /* ============================================================
+           РЕЗУЛЬТАТЫ
+           ============================================================ */
+        .results-count {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .result-card:active {
+            border-color: var(--accent);
+            transform: scale(0.98);
+        }
+
+        .result-header {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .result-cat {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .cat-fuse { background: rgba(255, 167, 38, 0.15); color: var(--warning); }
+        .cat-problem { background: rgba(239, 83, 80, 0.15); color: var(--danger); }
+        .cat-instruction { background: rgba(102, 187, 106, 0.15); color: var(--success); }
+        .cat-t811 { background: rgba(79, 195, 247, 0.15); color: var(--accent); }
+
+        .result-question {
+            font-size: 14px;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        /* ============================================================
+           КАРТОЧКА ОТВЕТА
+           ============================================================ */
+        .answer-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 12px;
+        }
+
+        .answer-card h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: var(--accent);
+            line-height: 1.4;
+        }
+
+        .answer-text {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-primary);
+            white-space: pre-line;
+        }
+
+        .answer-text b, .answer-text strong {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ============================================================
+           СПИСОК ПРЕДОХРАНИТЕЛЕЙ
+           ============================================================ */
+        .fuse-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .fuse-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .fuse-item:active {
+            border-color: var(--warning);
+            background: var(--bg-card-hover);
+        }
+
+        .fuse-num {
+            background: rgba(255, 167, 38, 0.15);
+            color: var(--warning);
+            font-weight: 700;
+            font-size: 13px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            min-width: 55px;
+            text-align: center;
+        }
+
+        .fuse-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            flex: 1;
+        }
+
+        /* ============================================================
+           ИНСТРУКЦИИ
+           ============================================================ */
+        .instruction-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .instruction-content h3 {
+            color: var(--accent);
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .instruction-content p,
+        .instruction-content li {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-primary);
+        }
+
+        .instruction-content ul {
+            padding-left: 20px;
+        }
+
+        .instruction-content li {
+            margin-bottom: 8px;
+        }
+
+        .checklist-section {
+            margin-bottom: 20px;
+        }
+
+        .checklist-section h4 {
+            color: var(--warning);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .checklist-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+            transition: var(--transition);
+        }
+
+        .checklist-checkbox.checked {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .checklist-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .checklist-item.checked-item .checklist-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .checklist-text {
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .checklist-progress {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            height: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .checklist-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #81c784);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .checklist-progress-text {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .checklist-reset {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 13px;
+            width: 100%;
+            margin-top: 16px;
+            transition: var(--transition);
+        }
+
+        .checklist-reset:active {
+            background: var(--bg-card-hover);
+        }
+
+        /* ============================================================
+           ДИАГНОСТИКА
+           ============================================================ */
+        .diag-question {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .diag-question h3 {
+            color: var(--text-primary);
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .diag-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .diag-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 14px;
+            text-align: left;
+            transition: var(--transition);
+        }
+
+        .diag-btn:active {
+            border-color: var(--accent);
+            background: var(--bg-card-hover);
+            transform: scale(0.98);
+        }
+
+        /* ============================================================
+           УВЕДОМЛЕНИЯ
+           ============================================================ */
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            z-index: 200;
+            transition: transform 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ============================================================
+           АНИМАЦИИ
+           ============================================================ */
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* ============================================================
+           ПУСТОЕ СОСТОЯНИЕ
+           ============================================================ */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state .emoji {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* ============================================================
+           СКРОЛЛ
+           ============================================================ */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        /* Быстрые действия */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .quick-chip {
+            background: var(--accent-glow);
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            color: var(--accent);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .quick-chip:active {
+            background: rgba(79, 195, 247, 0.3);
+        }
+
+        /* Статистика */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-card .label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            margin-top: 20px;
+            padding-left: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================
+     ШАПКА
+     ============================================================ -->
+<div class="header">
+    <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+    <h1>🚋 <span id="headerTitle">Помощник водителя</span></h1>
+    <div class="header-subtitle" id="headerSubtitle">База знаний</div>
+</div>
+
+<!-- ============================================================
+     КОНТЕНТ
+     ============================================================ -->
+<div class="content" id="content">
+
+    <!-- ГЛАВНОЕ МЕНЮ -->
+    <div class="screen active" id="screen-main">
+        <div class="greeting-card fade-in">
+            <div class="emoji">🚋</div>
+            <h2 id="greetingText">Добрый день!</h2>
+            <p>Помощник водителя трамвая</p>
+        </div>
+
+        <div class="menu-grid">
+            <button class="menu-btn fade-in" onclick="showScreen('problems')" style="animation-delay:0.05s">
+                <span class="icon">🔧</span>
+                <span class="label">Неисправности<small>Диагностика и решения</small></span>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="menu-btn fade-in" onclick="showScreen('fuses')" style="animation-delay:0.1s">
+                <span class="icon">⚡</span>
+                <span class="label">Предохранители<small>FU 1 — FU 42</small></span>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="menu-btn fade-in" onclick="showScreen('instructions')" style="animation-delay:0.15s">
+                <span class="icon">📋</span>
+                <span class="label">Инструкции<small>Правила и чек-листы</small></span>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="menu-btn fade-in" onclick="showScreen('search')" style="animation-delay:0.2s">
+                <span class="icon">🔍</span>
+                <span class="label">Поиск по базе<small>Умный поиск по всем разделам</small></span>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="menu-btn fade-in" onclick="showScreen('t811')" style="animation-delay:0.25s">
+                <span class="icon">🚃</span>
+                <span class="label">Т811<small>В разработке</small></span>
+                <span class="arrow">›</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- НЕИСПРАВНОСТИ -->
+    <div class="screen" id="screen-problems">
+        <div class="menu-grid fade-in">
+            <button class="menu-btn" onclick="showScreen('diagnostic')">
+                <span class="icon">🔍</span>
+                <span class="label">Интерактивная диагностика<small>Пошаговый поиск неисправности</small></span>
+                <span class="arrow">›</span>
+            </button>
+            <button class="menu-btn" onclick="showScreen('problem-search')">
+                <span class="icon">✏️</span>
+                <span class="label">Описать проблему текстом<small>Свободный поиск</small></span>
+                <span class="arrow">›</span>
+            </button>
+        </div>
+
+        <div class="section-title">Частые проблемы</div>
+        <div class="quick-actions" id="quickProblems"></div>
+    </div>
+
+    <!-- ПОИСК НЕИСПРАВНОСТЕЙ -->
+    <div class="screen" id="screen-problem-search">
+        <div class="search-box fade-in">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="problemSearchInput"
+                   placeholder="Опишите неисправность..."
+                   oninput="searchProblems(this.value)">
+            <button class="search-clear" id="problemClearBtn" onclick="clearSearch('problem')">✕</button>
+        </div>
+        <div id="problemResults"></div>
+    </div>
+
+    <!-- ПРЕДОХРАНИТЕЛИ -->
+    <div class="screen" id="screen-fuses">
+        <div class="search-box fade-in">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="fuseSearchInput"
+                   placeholder="Номер или описание (напр: 25 или дверь)"
+                   oninput="searchFuses(this.value)">
+            <button class="search-clear" id="fuseClearBtn" onclick="clearSearch('fuse')">✕</button>
+        </div>
+        <div id="fuseResults">
+            <div class="fuse-list" id="fuseList"></div>
+        </div>
+    </div>
+
+    <!-- ИНСТРУКЦИИ -->
+    <div class="screen" id="screen-instructions">
+        <div class="menu-grid fade-in">
+            <button class="menu-btn" onclick="showScreen('checklist')">
+                <span class="icon">✅</span>
+                <span class="label">Проверка вагона перед выездом<small>Интерактивный чек-лист</small></span>
+                <span class="arrow">›</span>
+            </button>
+            <button class="menu-btn" onclick="showInstruction('speed')">
+                <span class="icon">🚦</span>
+                <span class="label">Ограничения скорости<small>Все ограничения</small></span>
+                <span class="arrow">›</span>
+            </button>
+            <button class="menu-btn" onclick="showInstruction('distance')">
+                <span class="icon">📏</span>
+                <span class="label">Дистанция<small>Безопасные расстояния</small></span>
+                <span class="arrow">›</span>
+            </button>
+            <button class="menu-btn" onclick="showInstruction('brake')">
+                <span class="icon">🛑</span>
+                <span class="label">Проверка мех. тормоза<small>Порядок проверки</small></span>
+                <span class="arrow">›</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ЧЕК-ЛИСТ -->
+    <div class="screen" id="screen-checklist">
+        <div class="answer-card fade-in">
+            <div class="checklist-progress-text" id="checklistProgressText">0 из 0 выполнено</div>
+            <div class="checklist-progress">
+                <div class="checklist-progress-bar" id="checklistProgressBar" style="width: 0%"></div>
+            </div>
+            <div id="checklistContent"></div>
+            <button class="checklist-reset" onclick="resetChecklist()">🔄 Сбросить чек-лист</button>
+        </div>
+    </div>
+
+    <!-- ПРОСМОТР ИНСТРУКЦИИ -->
+    <div class="screen" id="screen-instruction-view">
+        <div class="answer-card fade-in" id="instructionContent"></div>
+    </div>
+
+    <!-- ПОИСК ПО ВСЕЙ БАЗЕ -->
+    <div class="screen" id="screen-search">
+        <div class="search-box fade-in">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="globalSearchInput"
+                   placeholder="Поиск по всей базе знаний..."
+                   oninput="searchAll(this.value)">
+            <button class="search-clear" id="globalClearBtn" onclick="clearSearch('global')">✕</button>
+        </div>
+
+        <div class="quick-actions" id="searchQuickActions">
+            <span class="quick-chip" onclick="quickSearch('не работает')">не работает</span>
+            <span class="quick-chip" onclick="quickSearch('дверь')">дверь</span>
+            <span class="quick-chip" onclick="quickSearch('тормоз')">тормоз</span>
+            <span class="quick-chip" onclick="quickSearch('освещение')">освещение</span>
+            <span class="quick-chip" onclick="quickSearch('отопление')">отопление</span>
+            <span class="quick-chip" onclick="quickSearch('буксир')">буксир</span>
+        </div>
+
+        <div id="globalResults" style="margin-top: 16px"></div>
+    </div>
+
+    <!-- ПРОСМОТР ОТВЕТА -->
+    <div class="screen" id="screen-answer">
+        <div class="answer-card fade-in" id="answerContent"></div>
+        <div id="similarResults"></div>
+    </div>
+
+    <!-- ДИАГНОСТИКА -->
+    <div class="screen" id="screen-diagnostic">
+        <div id="diagnosticContent"></div>
+    </div>
+
+    <!-- T811 -->
+    <div class="screen" id="screen-t811">
+        <div class="empty-state fade-in">
+            <div class="emoji">🚃</div>
+            <p>Раздел Т811 в разработке</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- УВЕДОМЛЕНИЯ -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// БАЗА ЗНАНИЙ (вся твоя база из JSON)
+// ============================================================
+const KNOWLEDGE_BASE = [
+    {"id":1,"category":"instruction","keywords":["механический","проверить","проверка","удержание","тормоз"],"question":"Как проверить эффективность механического тормоза?","answer":"Проверка механического тормоза:\n\n1. Привести вагон в рабочее состояние\n\n2. Зажать кнопку проверки механического тормоза\n\n3. Кратковременно (не более 10 секунд) включить трамвай в режим хода, установив контроллер на 200А\n\n4. Если вагон остался неподвижным, то механический тормоз исправен"},
+    {"id":2,"category":"instruction","keywords":["скорость","ограничение","места","случай"],"question":"Какие существуют ограничения скорости?","answer":"Ограничения скорости:\n\n3 км/ч:\n• При проезде в негабаритных местах\n• При проезде моечной линии\n\n5 км/ч:\n• При маневровых работах\n• На территории филиала\n• При скоплении пешеходов или ТС\n• При проезде противошерстных стрелок\n• В зоне ремонта КС\n• При подъезде к стоящему трамваю\n• При движении задним ходом\n• В зоне ремонтных работ\n• Через ОП без выполнения остановки\n\n10 км/ч:\n• При движении по неправильному пути\n• При загрязненном состоянии рельсов на спусках с уклоном от 3%\n• При проезде под лирой\n\n15 км/ч:\n• При проезде пошерстных стрелок\n• По крестовинам\n• При буксировке\n• На кривых радиусом до 50 м\n• На спусках с уклоном от 7 до 9%\n\n20 км/ч:\n• Кривые радиусом 50-75 м\n• Спуски с уклоном 5-7%\n\n25 км/ч:\n• Кривые радиусом 75-100 м\n• Спуски с уклоном 3-5%\n\n30 км/ч:\n• Кривые радиусом от 100 м"},
+    {"id":3,"category":"instruction","keywords":["соблюдать","дистанция","впередиидущий вагон","расстояние","метр"],"question":"Какую дистанцию необходимо соблюдать?","answer":"• На ровном участке при скорости до 20 км/ч - 60 м\n\n• При скорости более 20 км/ч - 120 м\n\n• Остановка перед стоящим трамваем вне остановочного пункта на ровном участке - 15 м\n\n• Подъёмы и спуски с уклоном менее 4% - 30 м, Более 4% - 60 м\n\n• На остановочных пунктах где разрешена остановка одновременно двух трамваев - 3 м"},
+    {"id":86,"category":"problem","keywords":["передний","дверь","открываться","тумблер","снаружи","вагон","предохранитель","fu","фу","25"],"question":"Передняя дверь не открывается тумблером снаружи вагона","answer":"Открыть переднюю дверь вытянув шнур аварийного открытия двери, восстановить работу двери, предохранитель FU 25, если неисправность сохранилась, во время работы в этот день не закрывать переднюю дверь тумблером снаружи трамвая, оформить заявку на ремонт"},
+    {"id":87,"category":"problem","keywords":["включаться","аккумуляторный","батарея","акб","аккумулятор"],"question":"Не включается аккумуляторная батарея (АКБ)","answer":"1. Проверить кнопку аварийного отключения оборудования\n\n2. Выключить и включить АКБ\n\n3. Предохранитель FU 1"},
+    {"id":88,"category":"problem","keywords":["вольтметр","показывать","0","ноль","вольт"],"question":"Вольтметр показывает 0 Вольт","answer":"1. Аккуратно постучать по вольтметру\n\n2. Предохранители FU 2 и FU 6"},
+    {"id":89,"category":"problem","keywords":["трамвай","не включается","ход","педаль","безопасность","экстренный","тормоз","реверсор","рукоятка","фальшборт"],"question":"Трамвай не включается в режим хода и при отпуске педали безопасности не срабатывает экстренный тормоз","answer":"Решение:\n\n1. Отключить трамвай в установленном порядке\n\n2. Опустить пантограф и убедиться в опущенном положении\n\n3. Взять из инструментального ящика рукоятку реверсора\n\n4. Выйти из кабины и, соблюдая все меры предосторожности, открыть фальшборт для доступа к реверсору\n\n5. Установить рукоятку реверсора в пазы вала и перевести вал в нужное направление"},
+    {"id":90,"category":"problem","keywords":["заряд","акб","аккумулятор","напряжение","вольтметр","ниже","26","22","зарядка","статический"],"question":"Заряд АКБ (напряжение по вольтметрам ниже 26 В)","answer":"Решение:\n\n1. Выключить и включить автоматический выключатель статического напряжения\n\n2. Выключить и включить АКБ\n\n3. Если зарядка не появляется, тогда при напряжении АКБ не ниже 22 В — следовать БЕЗ ПАССАЖИРОВ до ближайшей конечной или в парк\n\n4. Если напряжение ниже 22 В — буксировка до ближайшей конечной или в парк"},
+    {"id":91,"category":"problem","keywords":["режим","ход","не растормаживается","пусковые","токи","красные","лампочки","стояночный","тормоз","контроллер"],"question":"При включении в режим хода трамвай не растормаживается, пусковые токи есть, на пульте горят красные лампочки стояночного тормоза","answer":"Решение:\n\n1. Установить контроллер в 0\n\n2. Установить контроллер в положение стояночного тормоза и держать так 2-3 секунды\n\n3. Установить контроллер в 0\n\n4. Включить трамвай в режим хода\n\n5. Если не помогло — перезапустить цепи управления и пробовать на ход «по-моторно»\n\n6. Если не помогло — буксир"},
+    {"id":92,"category":"problem","keywords":["растормаживается","соленоиды","накладываются","тормоз","кнопка"],"question":"При включении в режим хода трамвай растормаживается и после этого накладываются соленоиды, растормаживается и опять накладываются","answer":"Решение:\n\n1. Установить контроллер в 0\n\n2. Несколько раз нажать на кнопку «Тормоз» и удерживать её в нажатом положении несколько секунд\n\n3. Включить трамвай в режим хода\n\n4. Если не помогло — перезапустить цепи управления и пробовать на ход «по-моторно»\n\n5. Если не помогло — буксир"},
+    {"id":93,"category":"problem","keywords":["один","соленоид","накладывается","растормаживается","принудительно","вывести"],"question":"При включении в режим хода трамвай растормаживается, но один соленоид начинает накладываться и тут же растормаживается","answer":"Решение:\n\n1. Перезапустить цепи управления\n\n2. Если не помогло — принудительно растормозить (вывести) неисправный соленоид\n\n3. Действовать согласно правилу при неисправности одного «стояночного тормоза»"},
+    {"id":94,"category":"problem","keywords":["не растормаживается","пусковые","токи","красные","лампочки","соленоиды","не горят","магнитные","колодки","fu","фу","7"],"question":"При включении в режим хода трамвай не растормаживается, пусковые токи имеются, красные лампочки соленоидов не горят, магнитные колодки не работают","answer":"Решение:\n\n1. Проверить предохранитель FU 7 (15 А)\n\n2. Если перегорел — заменить\n\n3. Если не помогло — буксир"},
+    {"id":95,"category":"problem","keywords":["нету","нет","пусковых","токов","не растормаживается","автоматический","выключатель","реле","перегрузка","бсв","fu","фу","39","40","3","4","5","стрелка","токоприемник"],"question":"При включении в режим хода нету пусковых токов, трамвай не растормаживается","answer":"Решение:\n\n1. Проверить все автоматические выключатели и реле перегрузки (если сработало — сбросить)\n\n2. Если не помогло — проверить закрытие всех дверей и перезапустить цепи управления\n\n3. Если не помогло — проверить лампочки «БСВ-1» и «БСВ-2»:\n   • Если лампочки не горят — переключить вагон на исправную группу\n   • Проверить предохранители FU 39 и FU 40, если перегорели — заменить\n   • Двигаться на одной группе с учётом требований инструкции\n\n4. Если не помогло — проверить предохранители FU 3, FU 4 и FU 5, если перегорели — заменить\n\n5. Проверить кнопку «Проезд стрелки» — нажать и отпустить ещё раз\n\n6. Проверить достаёт ли токоприёмник до контактной сети, проверить вставки на токоприёмнике, проверить свободный ход верёвки токоприёмника\n\n7. Если ничего не помогло — буксир"},
+    {"id":96,"category":"problem","keywords":["экстренное","торможение","сработало","педаль","безопасность","кнопка","инструктор","стоп-кран"],"question":"Сработало экстренное торможение","answer":"Решение:\n\n1. Проверить педаль безопасности\n\n2. Проверить кнопку инструктора\n\n3. Проверить стоп-краны в салоне\n\n4. Установить контроллер в экстренный тормоз, а затем в 0\n\n5. Если не помогло — буксировка"},
+    {"id":97,"category":"problem","keywords":["крыша","гудение","звуки","вибрация","радиореактор","посторонний"],"question":"При включении вагона в режим хода на крыше слышно гудение, посторонние звуки с вибрацией","answer":"Решение:\n\nНеисправность радиореактора.\n\n✅ Можно продолжить движение.\n\n📝 Оформить заявку по окончанию смены."},
+    {"id":98,"category":"problem","keywords":["створка","дверь","не закрывается","перемещается","свободно","скоба","предохранитель"],"question":"Створка дверей не закрывается, перемещается свободно","answer":"Решение:\n\n1. Свести створки вместе и зафиксировать скобой\n\n2. Извлечь предохранитель неисправной двери\n\n3. Продолжить движение в парк без пассажиров"},
+    {"id":99,"category":"problem","keywords":["шум","салон","под вагоном","стук","скрежет","свободный ход","слабый разгон","кардан","оборван","тележка","люк"],"question":"Слышен посторонний шум в салоне, под вагоном, стук, скрежет, отсутствует свободный ход, слабый разгон","answer":"Решение:\n\n1. Высадить всех пассажиров\n\n2. Сообщить диспетчеру парка о случившемся — диспетчер направит аварийную бригаду\n\n3. Найти оборванный кардан (открыть люки в полу над тележками в салоне) и оценить ситуацию\n\n4. Если кардан оборван со стороны редуктора и при переключении трамвая на исправную группу кардан не создаст препятствия для движения — следовать в парк, выполняя действия инструкции\n\n5. Если кардан создаст препятствия для движения трамвая — ожидать аварийную бригаду"},
+    {"id":100,"category":"problem","keywords":["магнитная","колодка","рельсовый","тормоз","перекошена","трение","скрежет","оборвано","крепление"],"question":"Магнитная колодка (рельсовый тормоз) перекошена, слышно трение, скрежет, оборвано крепление магнитной колодки","answer":"Решение:\n\n1. Высадить всех пассажиров\n\n2. Сообщить диспетчеру парка о случившемся — диспетчер направит аварийную бригаду\n\n⚠️ Движение запрещено до прибытия аварийной бригады!"},
+    {"id":101,"category":"problem","keywords":["не переводится","реверс","реверсор","щелчки","реле","к10","к11","fu","фу","8","направление","вперед","назад"],"question":"Не переводится реверс","answer":"Решение:\n\nЕсли при выборе направления в шкафу НЕ слышны щелчки реле:\n1. Опустить токоприёмник\n2. Включить цепи управления\n3. В шкафу произвести включение реле К10 «вперёд» или К11 «назад»\n4. Если зазвенел звонок — поднять пантограф и продолжить движение\n\nЕсли при выборе направления в шкафу слышны щелчки реле:\n1. Извлечь предохранитель FU 8 (7.5 А)\n2. Несколько раз последовательно нажать кнопки реверса «Вперёд» и «Назад»\n3. Опустить токоприёмник\n4. Перевести реверс вручную под вагоном"},
+    {"id":102,"category":"problem","keywords":["механический","тормоз","нет","фаза","половинное","усилие","соленоиды","сразу","полная","сила","резистор"],"question":"При включении механического тормоза нет фазы половинного усилия действия механического тормоза — соленоиды сразу накладываются в полную силу","answer":"Решение:\n\nОбрыв в цепи добавочных резисторов, в цепи питания.\n\n1. Сообщить диспетчеру парка о замене вагона на исправный\n\n2. Ехать в парк на замену"},
+    {"id":103,"category":"problem","keywords":["не работает","отопление","кабина","печка","автомат","fu","фу","28","29","30"],"question":"Не работает отопление кабины","answer":"Решение:\n\n1. Проверить автомат «Отопление кабины»\n\n2. Проверить предохранители:\n   • FU 28 (5 А)\n   • FU 29 (15 А)\n   • FU 30 (5 А)"},
+    {"id":104,"category":"problem","keywords":["не включается","вентилятор","отопление","печка","кабина","fu","фу","28","29"],"question":"Не включается вентилятор системы отопления кабины","answer":"Решение:\n\n1. Извлечь и установить предохранитель FU 28\n\n2. Проверить предохранитель FU 29 (15 А)"},
+    {"id":105,"category":"problem","keywords":["не работает","отопление","салон","печка","автомат","fu","фу","31","32","33","34"],"question":"Не работает отопление салона","answer":"Решение:\n\n1. Проверить автомат «Отопление салона»\n\n2. Проверить предохранители:\n   • FU 31 (5 А)\n   • FU 32 (7.5 А)\n   • FU 33 (7.5 А)\n   • FU 34 (10 А)"},
+    {"id":106,"category":"problem","keywords":["не работает","обогрев","песочницы","песок","автомат","fu","фу","35"],"question":"Не работает обогрев песочниц","answer":"Решение:\n\n1. Проверить автомат «Обогрев песочниц»\n\n2. Проверить предохранитель FU 35 (5 А)"},
+    {"id":107,"category":"problem","keywords":["не работает","обогрев","зеркало","зеркала","разъём","fu","фу","18"],"question":"Не работает обогрев зеркал","answer":"Решение:\n\n1. Проверить предохранитель FU 18 (5 А)\n\n2. Проверить разъёмное соединение на зеркале"},
+    {"id":108,"category":"problem","keywords":["не работает","вентилятор","кабина","обдув","fu","фу","36"],"question":"Не работает вентилятор кабины","answer":"Решение:\n\nПроверить предохранитель FU 36 (5 А)"},
+    {"id":109,"category":"problem","keywords":["не работает","ближний","свет","фары","fu","фу","9","15"],"question":"Не работает ближний свет фар","answer":"Решение:\n\n1. Проверить предохранитель FU 9 (5 А)\n\n2. Несколько раз вкл./выкл. ближний свет фар\n\n3. Несколько раз вкл./выкл. дальний свет фар\n\n4. Проверить предохранитель FU 15 (7.5 А)"},
+    {"id":110,"category":"problem","keywords":["не работает","дальний","свет","фары","fu","фу","14"],"question":"Не работает дальний свет фар","answer":"Решение:\n\n1. Несколько раз вкл./выкл. дальний свет фар\n\n2. Проверить предохранитель FU 14 (7.5 А)"},
+    {"id":111,"category":"problem","keywords":["не работают","контурные","огни","габаритные","работают","fu","фу","13"],"question":"Не работают контурные огни (сверху кузова), при этом габаритные огни работают","answer":"Решение:\n\nПроверить предохранитель FU 13 (7.5 А)"},
+    {"id":112,"category":"problem","keywords":["не работают","габаритные","огни","габариты","стояночный","свет","fu","фу","10"],"question":"Не работают габаритные огни","answer":"Решение:\n\n1. Вкл./выкл. «Стояночный свет»\n\n2. Проверить предохранитель FU 10 (7.5 А)"},
+    {"id":113,"category":"problem","keywords":["не работает","аварийка","аварийная","сигнализация","fu","фу","12"],"question":"Не работает аварийка","answer":"Решение:\n\n1. Несколько раз вкл./выкл. красный выключатель «Аварийная сигнализация»\n\n2. Проверить предохранитель FU 12 (7.5 А)"},
+    {"id":114,"category":"problem","keywords":["не работает","сигнал","задний","ход","звуковой","fu","фу","16"],"question":"Не работает сигнал заднего хода, звуковой сигнал заднего хода","answer":"Решение:\n\nПроверить предохранитель FU 16 (7.5 А)"},
+    {"id":115,"category":"problem","keywords":["не работают","стоп-сигналы","стоп","сигнал","fu","фу","16"],"question":"Не работают стоп-сигналы","answer":"Решение:\n\nПроверить предохранитель FU 16 (7.5 А)"},
+    {"id":116,"category":"problem","keywords":["не работает","освещение","кабина","свет","fu","фу","20"],"question":"Не работает освещение кабины","answer":"Решение:\n\nПроверить предохранитель FU 20 (5 А)"},
+    {"id":117,"category":"problem","keywords":["не работает","освещение","салон","свет","лампы","светильники","fu","фу","21","22"],"question":"Не работает освещение салона","answer":"Решение:\n\n• Если работают лампы только в трёх светильниках — проверить предохранитель FU 21\n\n• Если работают лампы во всех, кроме трёх светильников — проверить предохранитель FU 22"},
+    {"id":118,"category":"problem","keywords":["не работает","освещение","подножки","ступеньки","fu","фу","23","10"],"question":"Не работает освещение подножек","answer":"Решение:\n\n1. Проверить предохранитель FU 23\n\n2. Проверить предохранитель FU 10"},
+    {"id":119,"category":"problem","keywords":["не работает","стеклоочиститель","дворники","стеклоомыватель","fu","фу","19"],"question":"Не работает стеклоочиститель (стеклоомыватель)","answer":"Решение:\n\nПроверить предохранитель FU 19"},
+    {"id":120,"category":"problem","keywords":["не работает","навигация","навигатор","fu","фу","41"],"question":"Не работает навигация","answer":"Решение:\n\nПроверить предохранитель FU 41"},
+    {"id":121,"category":"problem","keywords":["не работает","спидометр","скорость","fu","фу","8"],"question":"Не работает спидометр","answer":"Решение:\n\nПроверить предохранитель FU 8 (7.5 А)"},
+    {"id":122,"category":"problem","keywords":["не работает","информационная","система","информатор","табло","fu","фу","42"],"question":"Не работает информационная система","answer":"Решение:\n\nПроверить предохранитель FU 42 (5 А)"},
+    {"id":123,"category":"problem","keywords":["не работает","звонок","сигнал","гудок","fu","фу","17"],"question":"Не работает звонок","answer":"Решение:\n\nПроверить предохранитель FU 17"},
+    {"id":124,"category":"problem","keywords":["не работает","вентилятор","обдув","бсв","бсв-1","бсв-2","fu","фу","39","40"],"question":"Не работает вентилятор обдува БСВ-1, БСВ-2","answer":"Решение:\n\nПроверить предохранители FU 39 и FU 40"},
+    {"id":125,"category":"problem","keywords":["дверь","перестала","открываться","закрываться","fu","фу","25","26","27","перезапустить","цепи"],"question":"Дверь перестала открываться и закрываться","answer":"Решение:\n\n1. Проверить предохранители FU 25, FU 26, FU 27\n\n2. Извлечь и вновь установить соответствующий предохранитель\n\n3. Перезапустить цепи управления"},
+    {"id":126,"category":"problem","keywords":["дверь","закрывается","открывается","сама","датчик","шторка","конечное","положение","фиксация"],"question":"Дверь закрывается и тут же открывается","answer":"Решение:\n\n1. Проверить шторку датчика конечного положения\n\n2. Для фиксации дверей в закрытом положении:\n   • Нажать кнопку закрытия двери\n   • В момент, когда дверь закроется — выдернуть соответствующий предохранитель\n   • Механически зафиксировать створки"},
+    {"id":4,"category":"fuse","keywords":["fu","фу","2","предохранитель"],"question":"FU 2","answer":"FU 2 — Контактор цепей управления, реле включения цепей управления, реле включения обдува, цепи «по-моторно», реверсор, педаль безопасности, вольтметр первой группы АКБ"},
+    {"id":6,"category":"fuse","keywords":["fu","фу","3","предохранитель"],"question":"FU 3","answer":"FU 3 — Цепи управления зарядкой конденсаторов БКФ"},
+    {"id":8,"category":"fuse","keywords":["fu","фу","4","предохранитель"],"question":"FU 4","answer":"FU 4 — Цепи управления двигателями первой тележки и блок управления первой тележки"},
+    {"id":10,"category":"fuse","keywords":["fu","фу","5","предохранитель"],"question":"FU 5","answer":"FU 5 — Цепи управления двигателями второй тележки и блок управления второй тележки"},
+    {"id":12,"category":"fuse","keywords":["fu","фу","1","предохранитель"],"question":"FU 1","answer":"FU 1 — Главный линейный контактор, контакторы включения АКБ"},
+    {"id":14,"category":"fuse","keywords":["fu","фу","10","предохранитель"],"question":"FU 10","answer":"FU 10 — Стояночный свет, контурные огни"},
+    {"id":16,"category":"fuse","keywords":["fu","фу","12","предохранитель"],"question":"FU 12","answer":"FU 12 — Цепи аварийной световой сигнализации"},
+    {"id":18,"category":"fuse","keywords":["fu","фу","22","предохранитель"],"question":"FU 22","answer":"FU 22 — Лампы освещения салона (3 шт. — дежурное освещение)"},
+    {"id":20,"category":"fuse","keywords":["fu","фу","24","предохранитель"],"question":"FU 24","answer":"FU 24 — Освещение шкафов"},
+    {"id":22,"category":"fuse","keywords":["fu","фу","25","предохранитель"],"question":"FU 25","answer":"FU 25 — Управление и привод передней двери (тумблер на улице)"},
+    {"id":24,"category":"fuse","keywords":["fu","фу","26","предохранитель"],"question":"FU 26","answer":"FU 26 — Управление и привод средней двери"},
+    {"id":26,"category":"fuse","keywords":["fu","фу","28","предохранитель"],"question":"FU 28","answer":"FU 28 — Цепи управления отоплением кабины"},
+    {"id":28,"category":"fuse","keywords":["fu","фу","29","предохранитель"],"question":"FU 29","answer":"FU 29 — Вентилятор печи кабины"},
+    {"id":30,"category":"fuse","keywords":["fu","фу","31","предохранитель"],"question":"FU 31","answer":"FU 31 — Цепи управления печами салона"},
+    {"id":32,"category":"fuse","keywords":["fu","фу","32","предохранитель"],"question":"FU 32","answer":"FU 32 — Вентиляторы печей салона 1, 2"},
+    {"id":34,"category":"fuse","keywords":["fu","фу","33","предохранитель"],"question":"FU 33","answer":"FU 33 — Вентиляторы печей салона 3, 4"},
+    {"id":36,"category":"fuse","keywords":["fu","фу","27","предохранитель"],"question":"FU 27","answer":"FU 27 — Управление и привод задней двери"},
+    {"id":38,"category":"fuse","keywords":["fu","фу","41","предохранитель"],"question":"FU 41","answer":"FU 41 — Часы, навигатор"},
+    {"id":40,"category":"fuse","keywords":["fu","фу","6","предохранитель"],"question":"FU 6","answer":"FU 6 — Блок индикации неисправностей, низковольтная часть блока гальванической развязки и счётчика электроэнергии, вольтметр второй группы АКБ"},
+    {"id":42,"category":"fuse","keywords":["fu","фу","7","предохранитель"],"question":"FU 7","answer":"FU 7 — Цепи управления тормозами: соленоиды, магнитные колодки, стоп-кран, педаль безопасности, песочница"},
+    {"id":44,"category":"fuse","keywords":["fu","фу","8","предохранитель"],"question":"FU 8","answer":"FU 8 — Реле блокировки перевода реверсора"},
+    {"id":46,"category":"fuse","keywords":["fu","фу","9","предохранитель"],"question":"FU 9","answer":"FU 9 — Управление цепями освещения"},
+    {"id":48,"category":"fuse","keywords":["fu","фу","11","предохранитель"],"question":"FU 11","answer":"FU 11 — Цепи указателей поворотов"},
+    {"id":50,"category":"fuse","keywords":["fu","фу","13","предохранитель"],"question":"FU 13","answer":"FU 13 — Габаритные огни"},
+    {"id":52,"category":"fuse","keywords":["fu","фу","14","предохранитель"],"question":"FU 14","answer":"FU 14 — Дальний свет"},
+    {"id":54,"category":"fuse","keywords":["fu","фу","15","предохранитель"],"question":"FU 15","answer":"FU 15 — Ближний свет"},
+    {"id":56,"category":"fuse","keywords":["fu","фу","16","предохранитель"],"question":"FU 16","answer":"FU 16 — Стоп-сигналы, сигнал заднего хода, противотуманный фонарь"},
+    {"id":58,"category":"fuse","keywords":["fu","фу","17","предохранитель"],"question":"FU 17","answer":"FU 17 — Звонок, звуковой сигнал"},
+    {"id":60,"category":"fuse","keywords":["fu","фу","18","предохранитель"],"question":"FU 18","answer":"FU 18 — Обогрев зеркал заднего вида (линзы)"},
+    {"id":62,"category":"fuse","keywords":["fu","фу","19","предохранитель"],"question":"FU 19","answer":"FU 19 — Стеклоочиститель"},
+    {"id":64,"category":"fuse","keywords":["fu","фу","20","предохранитель"],"question":"FU 20","answer":"FU 20 — Лампа освещения кабины"},
+    {"id":66,"category":"fuse","keywords":["fu","фу","21","предохранитель"],"question":"FU 21","answer":"FU 21 — Лампы освещения салона (кроме дежурного освещения)"},
+    {"id":68,"category":"fuse","keywords":["fu","фу","23","предохранитель"],"question":"FU 23","answer":"FU 23 — Освещение подножек"},
+    {"id":70,"category":"fuse","keywords":["fu","фу","30","предохранитель"],"question":"FU 30","answer":"FU 30 — Контакторы ТЭН печи кабины"},
+    {"id":72,"category":"fuse","keywords":["fu","фу","34","предохранитель"],"question":"FU 34","answer":"FU 34 — Контакторы ТЭН печей салона"},
+    {"id":74,"category":"fuse","keywords":["fu","фу","35","предохранитель"],"question":"FU 35","answer":"FU 35 — Обогрев песочниц"},
+    {"id":76,"category":"fuse","keywords":["fu","фу","36","предохранитель"],"question":"FU 36","answer":"FU 36 — Вентилятор кабины"},
+    {"id":78,"category":"fuse","keywords":["fu","фу","39","предохранитель"],"question":"FU 39","answer":"FU 39 — Обдув БСВ 1"},
+    {"id":80,"category":"fuse","keywords":["fu","фу","40","предохранитель"],"question":"FU 40","answer":"FU 40 — Обдув БСВ 2"},
+    {"id":82,"category":"fuse","keywords":["fu","фу","42","предохранитель"],"question":"FU 42","answer":"FU 42 — Информационная система, информатор"},
+    {"id":84,"category":"fuse","keywords":["fu","фу","25a","25а","предохранитель"],"question":"FU 25A","answer":"FU 25A — Управление и привод передней двери из кабины"}
+];
+
+// ============================================================
+// ПРЕДОХРАНИТЕЛИ (для списка)
+// ============================================================
+const FUSE_LIST = [
+    {num:"1",desc:"Главный линейный контактор, АКБ"},
+    {num:"2",desc:"Контактор цепей управления"},
+    {num:"3",desc:"Зарядка конденсаторов БКФ"},
+    {num:"4",desc:"Двигатели первой тележки"},
+    {num:"5",desc:"Двигатели второй тележки"},
+    {num:"6",desc:"Блок индикации неисправностей"},
+    {num:"7",desc:"Управление тормозами"},
+    {num:"8",desc:"Реле блокировки реверсора"},
+    {num:"9",desc:"Управление освещением"},
+    {num:"10",desc:"Стояночный свет"},
+    {num:"11",desc:"Указатели поворотов"},
+    {num:"12",desc:"Аварийная сигнализация"},
+    {num:"13",desc:"Габаритные огни"},
+    {num:"14",desc:"Дальний свет"},
+    {num:"15",desc:"Ближний свет"},
+    {num:"16",desc:"Стоп-сигналы, задний ход"},
+    {num:"17",desc:"Звонок, звуковой сигнал"},
+    {num:"18",desc:"Обогрев зеркал"},
+    {num:"19",desc:"Стеклоочиститель"},
+    {num:"20",desc:"Освещение кабины"},
+    {num:"21",desc:"Освещение салона (основное)"},
+    {num:"22",desc:"Освещение салона (дежурное)"},
+    {num:"23",desc:"Освещение подножек"},
+    {num:"24",desc:"Освещение шкафов"},
+    {num:"25",desc:"Передняя дверь (тумблер снаружи)"},
+    {num:"25A",desc:"Передняя дверь (из кабины)"},
+    {num:"26",desc:"Средняя дверь"},
+    {num:"27",desc:"Задняя дверь"},
+    {num:"28",desc:"Управление отоплением кабины"},
+    {num:"29",desc:"Вентилятор печи кабины"},
+    {num:"30",desc:"Контакторы ТЭН печи кабины"},
+    {num:"31",desc:"Управление печами салона"},
+    {num:"32",desc:"Вентиляторы печей 1, 2"},
+    {num:"33",desc:"Вентиляторы печей 3, 4"},
+    {num:"34",desc:"Контакторы ТЭН печей салона"},
+    {num:"35",desc:"Обогрев песочниц"},
+    {num:"36",desc:"Вентилятор кабины"},
+    {num:"39",desc:"Обдув БСВ 1"},
+    {num:"40",desc:"Обдув БСВ 2"},
+    {num:"41",desc:"Часы, навигатор"},
+    {num:"42",desc:"Информационная система"}
+];
+
+// ============================================================
+// СИНОНИМЫ И ВЕСА
+// ============================================================
+const SYNONYMS = {
+    "дворник":["стеклоочиститель","щётка","щетка"],
+    "стеклоочиститель":["дворник","щётка","щетка"],
+    "аварийка":["аварийный","сигнализация","аварийная"],
+    "печка":["отопление","печь","обогрев","тепло"],
+    "отопление":["печка","печь","обогрев"],
+    "свет":["освещение","лампа"],
+    "освещение":["свет","лампа"],
+    "гудок":["звуковой","сигнал","звонок"],
+    "акб":["аккумулятор","аккумуляторный","батарея"],
+    "аккумулятор":["акб","батарея","аккумуляторный"],
+    "фу":["fu","предохранитель"],
+    "fu":["фу","предохранитель"],
+    "не работает":["не включается","неисправность","сломался"],
+    "не включается":["не работает","неисправность"],
+    "токи":["ток","пусковой"]
+};
+
+const KEYWORD_WEIGHTS = {
+    "не включается":10,"не работает":10,"не растормаживается":10,
+    "буксир":10,"экстренный":10,"соленоид":5,"пусковые":5,
+    "дверь":3,"отопление":3,"освещение":3,"тормоз":3
+};
+
+// ============================================================
+// ЧЕК-ЛИСТ
+// ============================================================
+const CHECKLIST = {
+    title: "ПРОВЕРКА ВАГОНА ПЕРЕД ВЫЕЗДОМ",
+    sections: [
+        {
+            title: "Внешний осмотр",
+            items: [
+                "Осмотреть кузов на наличие повреждений",
+                "Проверить состояние токоприёмника",
+                "Проверить состояние колёсных пар",
+                "Проверить крепление зеркал",
+                "Проверить состояние сцепных устройств"
+            ]
+        },
+        {
+            title: "Кабина водителя",
+            items: [
+                "Проверить работу контроллера",
+                "Проверить педаль безопасности",
+                "Проверить звонок и звуковой сигнал",
+                "Проверить стеклоочиститель",
+                "Проверить работу дверей",
+                "Проверить освещение кабины",
+                "Проверить вольтметры"
+            ]
+        },
+        {
+            title: "Тормозная система",
+            items: [
+                "Проверить механический тормоз",
+                "Проверить электрический тормоз",
+                "Проверить магнитные колодки",
+                "Проверить стоп-кран"
+            ]
+        },
+        {
+            title: "Освещение и сигнализация",
+            items: [
+                "Проверить ближний свет",
+                "Проверить дальний свет",
+                "Проверить габаритные огни",
+                "Проверить указатели поворотов",
+                "Проверить стоп-сигналы",
+                "Проверить аварийную сигнализацию",
+                "Проверить маршрутные указатели"
+            ]
+        }
+    ]
+};
+
+// ============================================================
+// ДИАГНОСТИЧЕСКОЕ ДЕРЕВО
+// ============================================================
+const DIAGNOSTIC_TREE = {
+    root: {
+        text: "Что произошло?",
+        options: [
+            {text: "🔌 Трамвай не включается в режим хода", next: "no_start"},
+            {text: "🚫 Трамвай не растормаживается", next: "no_brake_release"},
+            {text: "⚡ Сработало экстренное торможение", next: "emergency_brake"},
+            {text: "🚪 Проблема с дверями", next: "door_problem"},
+            {text: "💡 Не работает освещение", next: "light_problem"},
+            {text: "🌡️ Не работает отопление", next: "heating_problem"},
+            {text: "🔊 Посторонние звуки", next: "strange_sounds"},
+            {text: "📝 Описать проблему текстом", next: "text_search"}
+        ]
+    },
+    no_start: {
+        text: "Есть ли пусковые токи при включении в режим хода?",
+        options: [
+            {text: "Да, токи есть", next: "has_current"},
+            {text: "Нет, токов нет", answer: 95},
+            {text: "Педаль безопасности не работает", answer: 89}
+        ]
+    },
+    has_current: {
+        text: "Горят ли красные лампочки стояночного тормоза?",
+        options: [
+            {text: "Да, горят", answer: 91},
+            {text: "Нет, не горят", answer: 94},
+            {text: "Соленоиды накладываются и растормаживаются", answer: 92}
+        ]
+    },
+    no_brake_release: {
+        text: "Уточните ситуацию:",
+        options: [
+            {text: "Пусковые токи есть, красные лампочки горят", answer: 91},
+            {text: "Пусковые токи есть, лампочки НЕ горят", answer: 94},
+            {text: "Пусковых токов нет", answer: 95},
+            {text: "Один соленоид накладывается", answer: 93}
+        ]
+    },
+    emergency_brake: {
+        text: "Сработало экстренное торможение",
+        options: [
+            {text: "Посмотреть решение", answer: 96}
+        ]
+    },
+    door_problem: {
+        text: "Какая проблема с дверями?",
+        options: [
+            {text: "Дверь не открывается/не закрывается", answer: 125},
+            {text: "Передняя дверь не открывается снаружи", answer: 86},
+            {text: "Створка перемещается свободно", answer: 98},
+            {text: "Дверь закрывается и сразу открывается", answer: 126}
+        ]
+    },
+    light_problem: {
+        text: "Какое освещение не работает?",
+        options: [
+            {text: "Ближний свет", answer: 109},
+            {text: "Дальний свет", answer: 110},
+            {text: "Габаритные огни", answer: 112},
+            {text: "Контурные огни", answer: 111},
+            {text: "Освещение кабины", answer: 116},
+            {text: "Освещение салона", answer: 117},
+            {text: "Освещение подножек", answer: 118}
+        ]
+    },
+    heating_problem: {
+        text: "Где не работает отопление?",
+        options: [
+            {text: "В кабине", answer: 103},
+            {text: "В салоне", answer: 105},
+            {text: "Вентилятор печи кабины", answer: 104},
+            {text: "Обогрев зеркал", answer: 107},
+            {text: "Обогрев песочниц", answer: 106}
+        ]
+    },
+    strange_sounds: {
+        text: "Откуда идут звуки?",
+        options: [
+            {text: "С крыши (гудение, вибрация)", answer: 97},
+            {text: "Из-под вагона (стук, скрежет)", answer: 99},
+            {text: "Скрежет от колодки/тормоза", answer: 100}
+        ]
+    },
+    text_search: {
+        text: "Опишите проблему своими словами:",
+        action: "enable_text_search"
+    }
+};
+
+// ============================================================
+// СОСТОЯНИЕ ПРИЛОЖЕНИЯ
+// ============================================================
+let navigationStack = ['main'];
+let currentCategory = null;
+let checkedItems = JSON.parse(localStorage.getItem('checklist_checked') || '{}');
+let searchStats = JSON.parse(localStorage.getItem('search_stats') || '{"total":0,"queries":{}}');
+
+// ============================================================
+// НАВИГАЦИЯ
+// ============================================================
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const screen = document.getElementById('screen-' + screenId);
+    if (screen) {
+        screen.classList.add('active');
+        screen.classList.add('fade-in');
+    }
+
+    const backBtn = document.getElementById('backBtn');
+    const titleEl = document.getElementById('headerTitle');
+    const subtitleEl = document.getElementById('headerSubtitle');
+
+    if (screenId !== 'main') {
+        navigationStack.push(screenId);
+        backBtn.classList.add('visible');
+    } else {
+        navigationStack = ['main'];
+        backBtn.classList.remove('visible');
+    }
+
+    const titles = {
+        'main': ['Помощник водителя', 'База знаний'],
+        'problems': ['Неисправности', 'Диагностика и решения'],
+        'problem-search': ['Неисправности', 'Поиск по описанию'],
+        'fuses': ['Предохранители', 'FU 1 — FU 42'],
+        'instructions': ['Инструкции', 'Правила и чек-листы'],
+        'search': ['Поиск', 'По всей базе знаний'],
+        'answer': ['Ответ', ''],
+        'checklist': ['Чек-лист', 'Проверка перед выездом'],
+        'instruction-view': ['Инструкция', ''],
+        'diagnostic': ['Диагностика', 'Пошаговый поиск'],
+        't811': ['Т811', 'В разработке']
+    };
+
+    const t = titles[screenId] || ['Помощник водителя', ''];
+    titleEl.textContent = t[0];
+    subtitleEl.textContent = t[1];
+
+    if (screenId === 'fuses') renderFuseList();
+    if (screenId === 'checklist') renderChecklist();
+    if (screenId === 'problems') renderQuickProblems();
+    if (screenId === 'diagnostic') renderDiagnostic('root');
+
+    window.scrollTo(0, 0);
+}
+
+function goBack() {
+    navigationStack.pop();
+    const prev = navigationStack[navigationStack.length - 1] || 'main';
+    navigationStack.pop();
+    showScreen(prev);
+}
+
+// ============================================================
+// ПОИСК — ЯДРО (перенос логики бота)
+// ============================================================
+function expandWithSynonyms(words) {
+    const expanded = new Set(words);
+    words.forEach(word => {
+        if (SYNONYMS[word]) {
+            SYNONYMS[word].forEach(syn => expanded.add(syn));
+        }
+    });
+    return expanded;
+}
+
+function getWords(text) {
+    return text.toLowerCase()
+        .replace(/[^a-zа-яё0-9 ]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length > 1);
+}
+
+function stringSimilarity(s1, s2) {
+    if (s1 === s2) return 1;
+    if (s1.length < 2 || s2.length < 2) return 0;
+
+    let matches = 0;
+    const s2arr = s2.split('');
+    for (const char of s1) {
+        const idx = s2arr.indexOf(char);
+        if (idx !== -1) {
+            matches++;
+            s2arr.splice(idx, 1);
+        }
+    }
+    return (2 * matches) / (s1.length + s2.length);
+}
+
+function calculateScore(queryText, item, category) {
+    const words = getWords(queryText);
+    const expanded = expandWithSynonyms(words);
+    const keywords = new Set(item.keywords || []);
+    const allKeywords = expandWithSynonyms([...keywords]);
+    const question = item.question.toLowerCase();
+
+    let score = 0;
+
+    expanded.forEach(word => {
+        if (allKeywords.has(word)) {
+            score += KEYWORD_WEIGHTS[word] || 1;
+        } else if (question.includes(word)) {
+            score += 2;
+        }
+    });
+
+    if (score === 0) {
+        words.forEach(word => {
+            let bestScore = 0;
+            allKeywords.forEach(kw => {
+                const sim = stringSimilarity(word, kw);
+                if (sim >= 0.75 && sim > bestScore) {
+                    const weight = KEYWORD_WEIGHTS[kw] || 1;
+                    score += weight * sim;
+                    bestScore = sim;
+                }
+            });
+        });
+    }
+
+    if (category && item.category === category) {
+        score += 2;
+    }
+
+    return score;
+}
+
+function searchInBase(query, category) {
+    const queryLower = query.toLowerCase().trim();
+    if (queryLower.length < 2) return [];
+
+    let items = KNOWLEDGE_BASE;
+    if (category) {
+        items = items.filter(i => i.category === category);
+    }
+
+    // FU search
+    const fuMatch = queryLower.match(/(fu|фу)?\s*(\d+[aа]?)/i);
+    if (fuMatch) {
+        const fuNum = fuMatch[2].toLowerCase().replace('а', 'a');
+        const fuResults = items.filter(i =>
+            i.keywords.includes(fuNum) &&
+            i.question.toLowerCase().startsWith('fu')
+        );
+        if (fuResults.length > 0) {
+            return fuResults.map(item => ({item, score: 100}));
+        }
+    }
+
+    const results = [];
+    items.forEach(item => {
+        const score = calculateScore(query, item);
+        if (score > 0) {
+            results.push({item, score});
+        }
+    });
+
+    results.sort((a, b) => b.score - a.score);
+    return results;
+}
+
+// ============================================================
+// ОТОБРАЖЕНИЕ РЕЗУЛЬТАТОВ
+// ============================================================
+const CATEGORY_NAMES = {
+    fuse: 'Предохранители',
+    problem: 'Неисправности',
+    instruction: 'Инструкции',
+    t811: 'Т811'
+};
+
+const CATEGORY_CLASSES = {
+    fuse: 'cat-fuse',
+    problem: 'cat-problem',
+    instruction: 'cat-instruction',
+    t811: 'cat-t811'
+};
+
+function renderResults(results, containerId) {
+    const container = document.getElementById(containerId);
+    if (!results.length) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="emoji">🔍</div>
+                <p>Ничего не найдено.<br>Попробуйте другие слова.</p>
+            </div>`;
+        return;
+    }
+
+    const display = results.slice(0, 10);
+    container.innerHTML = `<div class="results-count">Найдено: ${results.length}</div>` +
+        display.map(r => `
+            <div class="result-card" onclick="showAnswer(${r.item.id})">
+                <div class="result-header">
+                    <span class="result-cat ${CATEGORY_CLASSES[r.item.category] || ''}">${CATEGORY_NAMES[r.item.category] || ''}</span>
+                    <span class="result-question">${r.item.question}</span>
+                </div>
+            </div>
+        `).join('');
+}
+
+// ============================================================
+// ПОКАЗ ОТВЕТА
+// ============================================================
+function showAnswer(id) {
+    const item = KNOWLEDGE_BASE.find(q => q.id === id);
+    if (!item) return;
+
+    const answerHtml = item.answer
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/(FU\s*\d+[AАaа]?)/g, '<strong>$1</strong>');
+
+    document.getElementById('answerContent').innerHTML = `
+        <span class="result-cat ${CATEGORY_CLASSES[item.category] || ''}" style="margin-bottom:12px;display:inline-block">
+            ${CATEGORY_NAMES[item.category] || ''}
+        </span>
+        <h3>${item.question}</h3>
+        <div class="answer-text" style="margin-top:16px">${answerHtml}</div>
+    `;
+
+    // Similar results
+    const similar = searchInBase(item.question, null)
+        .filter(r => r.item.id !== id && r.score >= 2)
+        .slice(0, 3);
+
+    const simContainer = document.getElementById('similarResults');
+    if (similar.length > 0) {
+        simContainer.innerHTML = `
+            <div class="section-title">Похожие вопросы</div>
+            ${similar.map(r => `
+                <div class="result-card" onclick="showAnswer(${r.item.id})">
+                    <div class="result-header">
+                        <span class="result-cat ${CATEGORY_CLASSES[r.item.category] || ''}">${CATEGORY_NAMES[r.item.category] || ''}</span>
+                        <span class="result-question">${r.item.question}</span>
+                    </div>
+                </div>
+            `).join('')}
+        `;
+    } else {
+        simContainer.innerHTML = '';
+    }
+
+    showScreen('answer');
+
+    // Stats
+    searchStats.total++;
+    localStorage.setItem('search_stats', JSON.stringify(searchStats));
+}
+
+// ============================================================
+// ПОИСК — ОБРАБОТЧИКИ
+// ============================================================
+let searchTimeout;
+
+function searchAll(query) {
+    clearTimeout(searchTimeout);
+    const clearBtn = document.getElementById('globalClearBtn');
+    clearBtn.classList.toggle('visible', query.length > 0);
+    document.getElementById('searchQuickActions').style.display = query.length > 0 ? 'none' : 'flex';
+
+    if (query.length < 2) {
+        document.getElementById('globalResults').innerHTML = '';
+        return;
+    }
+
+    searchTimeout = setTimeout(() => {
+        const results = searchInBase(query, null);
+        renderResults(results, 'globalResults');
+    }, 200);
+}
+
+function searchProblems(query) {
+    clearTimeout(searchTimeout);
+    document.getElementById('problemClearBtn').classList.toggle('visible', query.length > 0);
+
+    if (query.length < 2) {
+        document.getElementById('problemResults').innerHTML = '';
+        return;
+    }
+
+    searchTimeout = setTimeout(() => {
+        const results = searchInBase(query, 'problem');
+        renderResults(results, 'problemResults');
+    }, 200);
+}
+
+function searchFuses(query) {
+    clearTimeout(searchTimeout);
+    document.getElementById('fuseClearBtn').classList.toggle('visible', query.length > 0);
+
+    if (query.length < 2) {
+        renderFuseList();
+        return;
+    }
+
+    searchTimeout = setTimeout(() => {
+        const results = searchInBase(query, 'fuse');
+        if (results.length > 0) {
+            renderResults(results, 'fuseResults');
+        } else {
+            // Search in fuse list too
+            const queryLower = query.toLowerCase();
+            const filtered = FUSE_LIST.filter(f =>
+                f.num.toLowerCase().includes(queryLower) ||
+                f.desc.toLowerCase().includes(queryLower)
+            );
+            renderFilteredFuseList(filtered);
+        }
+    }, 200);
+}
+
+function clearSearch(type) {
+    if (type === 'global') {
+        document.getElementById('globalSearchInput').value = '';
+        document.getElementById('globalResults').innerHTML = '';
+        document.getElementById('globalClearBtn').classList.remove('visible');
+        document.getElementById('searchQuickActions').style.display = 'flex';
+    } else if (type === 'problem') {
+        document.getElementById('problemSearchInput').value = '';
+        document.getElementById('problemResults').innerHTML = '';
+        document.getElementById('problemClearBtn').classList.remove('visible');
+    } else if (type === 'fuse') {
+        document.getElementById('fuseSearchInput').value = '';
+        document.getElementById('fuseClearBtn').classList.remove('visible');
+        renderFuseList();
+    }
+}
+
+function quickSearch(query) {
+    document.getElementById('globalSearchInput').value = query;
+    searchAll(query);
+}
+
+// ============================================================
+// ПРЕДОХРАНИТЕЛИ — СПИСОК
+// ============================================================
+function renderFuseList() {
+    renderFilteredFuseList(FUSE_LIST);
+}
+
+function renderFilteredFuseList(list) {
+    const container = document.getElementById('fuseResults');
+    if (list.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>Предохранитель не найден</p></div>';
+        return;
+    }
+    container.innerHTML = `<div class="fuse-list">${list.map(f => `
+        <div class="fuse-item" onclick="showFuseDetail('${f.num}')">
+            <span class="fuse-num">FU ${f.num}</span>
+            <span class="fuse-desc">${f.desc}</span>
+        </div>
+    `).join('')}</div>`;
+}
+
+function showFuseDetail(num) {
+    const results = searchInBase('FU ' + num, 'fuse');
+    if (results.length > 0) {
+        showAnswer(results[0].item.id);
+    }
+}
+
+// ============================================================
+// ИНСТРУКЦИИ
+// ============================================================
+function showInstruction(type) {
+    const queries = {
+        speed: {q: 'ограничения скорости', id: 2},
+        distance: {q: 'дистанция соблюдать', id: 3},
+        brake: {q: 'проверка механический тормоз', id: 1}
+    };
+
+    const info = queries[type];
+    if (info) {
+        showAnswer(info.id);
+    }
+}
+
+// ============================================================
+// ЧЕК-ЛИСТ
+// ============================================================
+function renderChecklist() {
+    const container = document.getElementById('checklistContent');
+    let totalItems = 0;
+    let checkedCount = 0;
+
+    let html = '';
+    CHECKLIST.sections.forEach((section, si) => {
+        html += `<div class="checklist-section"><h4>${section.title}</h4>`;
+        section.items.forEach((item, ii) => {
+            const key = `${si}_${ii}`;
+            const isChecked = checkedItems[key];
+            totalItems++;
+            if (isChecked) checkedCount++;
+
+            html += `
+                <div class="checklist-item ${isChecked ? 'checked-item' : ''}" onclick="toggleCheckItem('${key}')">
+                    <div class="checklist-checkbox ${isChecked ? 'checked' : ''}"></div>
+                    <span class="checklist-text">${item}</span>
+                </div>`;
+        });
+        html += '</div>';
+    });
+
+    container.innerHTML = html;
+
+    const pct = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
+    document.getElementById('checklistProgressBar').style.width = pct + '%';
+    document.getElementById('checklistProgressText').textContent = `${checkedCount} из ${totalItems} выполнено (${pct}%)`;
+}
+
+function toggleCheckItem(key) {
+    checkedItems[key] = !checkedItems[key];
+    localStorage.setItem('checklist_checked', JSON.stringify(checkedItems));
+    renderChecklist();
+
+    if (navigator.vibrate) navigator.vibrate(30);
+}
+
+function resetChecklist() {
+    checkedItems = {};
+    localStorage.setItem('checklist_checked', '{}');
+    renderChecklist();
+    showToast('Чек-лист сброшен');
+}
+
+// ============================================================
+// ДИАГНОСТИКА
+// ============================================================
+function renderDiagnostic(nodeId) {
+    const node = DIAGNOSTIC_TREE[nodeId];
+    if (!node) return;
+
+    const container = document.getElementById('diagnosticContent');
+
+    if (node.action === 'enable_text_search') {
+        showScreen('problem-search');
+        return;
+    }
+
+    let html = `
+        <div class="diag-question fade-in">
+            <h3>${node.text}</h3>
+        </div>
+        <div class="diag-options fade-in">`;
+
+    node.options.forEach(opt => {
+        if (opt.next) {
+            html += `<button class="diag-btn" onclick="renderDiagnostic('${opt.next}')">${opt.text}</button>`;
+        } else if (opt.answer !== undefined) {
+            html += `<button class="diag-btn" onclick="showAnswer(${opt.answer})">${opt.text}</button>`;
+        }
+    });
+
+    if (nodeId !== 'root') {
+        html += `<button class="diag-btn" onclick="renderDiagnostic('root')" style="border-color:var(--accent);color:var(--accent)">↩ К началу диагностики</button>`;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// ============================================================
+// БЫСТРЫЕ ПРОБЛЕМЫ
+// ============================================================
+function renderQuickProblems() {
+    const popular = [
+        {text: "Не включается в режим хода", query: "не включается режим хода"},
+        {text: "Не растормаживается", query: "не растормаживается"},
+        {text: "Проблемы с дверями", query: "дверь не работает"},
+        {text: "Не работает свет", query: "не работает свет"},
+        {text: "Отопление кабины", query: "отопление кабины"},
+        {text: "Экстренное торможение", query: "экстренное торможение"}
+    ];
+
+    document.getElementById('quickProblems').innerHTML = popular.map(p =>
+        `<span class="quick-chip" onclick="quickProblemSearch('${p.query}')">${p.text}</span>`
+    ).join('');
+}
+
+function quickProblemSearch(query) {
+    showScreen('problem-search');
+    setTimeout(() => {
+        document.getElementById('problemSearchInput').value = query;
+        searchProblems(query);
+    }, 100);
+}
+
+// ============================================================
+// УВЕДОМЛЕНИЯ
+// ============================================================
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// ПРИВЕТСТВИЕ
+// ============================================================
+function setGreeting() {
+    const hour = new Date().getHours();
+    let greeting;
+    if (hour >= 5 && hour < 12) greeting = 'Доброе утро! ☀️';
+    else if (hour >= 12 && hour < 18) greeting = 'Добрый день! 🌤';
+    else if (hour >= 18 && hour < 23) greeting = 'Добрый вечер! 🌆';
+    else greeting = 'Доброй ночи! 🌙';
+
+    document.getElementById('greetingText').textContent = greeting;
+}
+
+// ============================================================
+// ИНИЦИАЛИЗАЦИЯ
+// ============================================================
+setGreeting();
+showScreen('main');
+
+// Обработка кнопки "Назад" в Android
+window.addEventListener('popstate', (e) => {
+    if (navigationStack.length > 1) {
+        goBack();
+    }
+});
+
+// Service Worker для офлайн-работы
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+
+</body>
+</html>
